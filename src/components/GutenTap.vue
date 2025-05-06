@@ -293,8 +293,8 @@
 
     <editor-content
       :class="editorClass ?? 'prose'"
-      @keydown="isTyping = true"
-      @keyup.esc="isTyping = false"
+      @keydown="handleKeyDown"
+      @keyup.esc="cancelTyping()"
       ref="editor"
       :editor="editor"
     />
@@ -520,6 +520,7 @@ export default {
   },
 
   beforeUnmount() {
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
     this.editor.destroy();
   },
 
@@ -547,8 +548,27 @@ export default {
   },
 
   methods: {
+     /* called on every keydown */
+    handleKeyDown() {
+      this.isTyping = true;
+
+      // clear any previous countdown
+      if (this.typingTimeout) clearTimeout(this.typingTimeout);
+
+      // start a new 2‑second debounce
+      this.typingTimeout = setTimeout(() => {
+        this.isTyping = false;
+        this.typingTimeout = null;
+      }, 2000);
+    },
+
+    /* ESC should hide immediately and stop the countdown */
     cancelTyping() {
-      this.$nextTick(() => (this.isTyping = false));
+      this.isTyping = false;
+      if (this.typingTimeout) {
+        clearTimeout(this.typingTimeout);
+        this.typingTimeout = null;
+      }
     },
 
     shouldShowMainToolbar() {
