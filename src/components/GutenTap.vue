@@ -68,10 +68,12 @@
       :class="{
         'mouse:pointer-events-none mouse:opacity-0': isTyping,
       }"
+      :update-delay="0"
       :tippy-options="{
         maxWidth: 'none',
         placement: 'top-start',
         getReferenceClientRect: getMenuCoords,
+        hideOnClick: false,
         onCreate: (instance) =>
           instance.popper.classList.add(
             'max-md:!sticky',
@@ -290,11 +292,10 @@
         </menu-item>
       </div>
     </bubble-menu>
-
     <editor-content
       :class="editorClass ?? 'prose'"
-      @keyup="handleKeyDown"
-      @keyup.esc="cancelTyping()"
+      @keydown="handleTyping"
+      @keyup.esc="isTyping = false"
       ref="editor"
       :editor="editor"
     />
@@ -417,6 +418,7 @@ export default {
       tableColumnTools: tableColumnTools(),
       topLevelNodeType: null,
       currentBlockTool: null,
+      typingTimeout: null,
       isTyping: false,
       showMainToolbar: false,
       moreIcon:
@@ -429,12 +431,11 @@ export default {
   },
 
   created: function () {
-    this._mouseMoveHandler = () => this.cancelTyping();
-    window.addEventListener('mousemove', this._mouseMoveHandler);
+    // window.addEventListener("mousemove", () => this.cancelTyping());
   },
 
   unmounted: function () {
-    window.removeEventListener('mousemove', this._mouseMoveHandler);
+    // window.removeEventListener("mousemove", () => this.cancelTyping());
   },
 
   mounted() {
@@ -521,8 +522,6 @@ export default {
   },
 
   beforeUnmount() {
-    if (this.typingTimeout) clearTimeout(this.typingTimeout);
-    window.removeEventListener('mousemove', this._mouseMoveHandler);
     this.editor.destroy();
   },
 
@@ -550,37 +549,28 @@ export default {
   },
 
   methods: {
-     /* called on every keydown */
-    handleKeyDown() {
+    handleTyping() {
+      // 1. As soon as any key is pressed, mark “typing”
       this.isTyping = true;
 
-      // clear any previous countdown
-      if (this.typingTimeout) clearTimeout(this.typingTimeout);
+      // 2. Clear any existing timer
+      if (this.typingTimeout) {
+        clearTimeout(this.typingTimeout);
+      }
 
-      // start a new 2‑second debounce
+      // 3. Start a new 3-second timer to flip back to false
       this.typingTimeout = setTimeout(() => {
         this.isTyping = false;
         this.typingTimeout = null;
-      }, 2000);
+      }, 1500);
     },
-
-    /* ESC should hide immediately and stop the countdown */
+    
     cancelTyping() {
-      this.isTyping = false;
-      if (this.typingTimeout) {
-        clearTimeout(this.typingTimeout);
-        this.typingTimeout = null;
-      }
+      this.$nextTick(() => (this.isTyping = false));
     },
 
     shouldShowMainToolbar() {
-      // return this.editable && this.editor.isActive() && this.modelValue;
-      return (
-        !this.isTyping &&
-        this.editable &&
-        this.editor.isActive() &&
-        this.modelValue
-      );
+      return this.editable && this.editor.isActive() && this.modelValue;
     },
 
     updateToolbar() {
