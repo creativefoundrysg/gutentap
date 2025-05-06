@@ -293,7 +293,7 @@
 
     <editor-content
       :class="editorClass ?? 'prose'"
-      @keydown="handleKeyDown"
+      @keyup="handleKeyDown"
       @keyup.esc="cancelTyping()"
       ref="editor"
       :editor="editor"
@@ -429,11 +429,12 @@ export default {
   },
 
   created: function () {
-    window.addEventListener("mousemove", () => this.cancelTyping());
+    this._mouseMoveHandler = () => this.cancelTyping();
+    window.addEventListener('mousemove', this._mouseMoveHandler);
   },
 
   unmounted: function () {
-    window.removeEventListener("mousemove", () => this.cancelTyping());
+    window.removeEventListener('mousemove', this._mouseMoveHandler);
   },
 
   mounted() {
@@ -521,6 +522,7 @@ export default {
 
   beforeUnmount() {
     if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    window.removeEventListener('mousemove', this._mouseMoveHandler);
     this.editor.destroy();
   },
 
@@ -572,7 +574,13 @@ export default {
     },
 
     shouldShowMainToolbar() {
-      return this.editable && this.editor.isActive() && this.modelValue;
+      // return this.editable && this.editor.isActive() && this.modelValue;
+      return (
+        !this.isTyping &&
+        this.editable &&
+        this.editor.isActive() &&
+        this.modelValue
+      );
     },
 
     updateToolbar() {
