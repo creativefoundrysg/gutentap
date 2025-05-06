@@ -55,7 +55,7 @@ jobs:
           # Commit message
           # commit_message: # optional
           # Write the given domain name to the CNAME file
-          fqdn: https://gutentap.letsdance.agency
+          fqdn: https://example.com
           # Allow Jekyll to build your site
           # jekyll: # optional, default is true
           # If enabled, nothing will be pushed
