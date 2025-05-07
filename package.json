@@ -16,8 +16,8 @@
       "require": "./lib/guten-tap.umd.cjs"
     },
     "./style.css": {
-      "import": "./lib/style.css",
-      "require": "./lib/style.css"
+      "import": "./lib/guten-tap.css",
+      "require": "./lib/guten-tap.css"
     }
   },
   "scripts": {
