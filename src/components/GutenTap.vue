@@ -210,7 +210,7 @@
         type="file"
         accept="image/*"
         class="hidden"
-        @change="onImageSelected"
+        @change="handleFileInput"
       />
       </div>
 
@@ -343,7 +343,6 @@ import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
 import Highlight from "@tiptap/extension-highlight";
 import Image from '@tiptap/extension-image'
-import axios from 'axios'
 
 import {
   DragNode,
@@ -372,6 +371,17 @@ import { tableRowTools, tableColumnTools } from "../tools/table-tools";
 
 export default {
   props: {
+      /**
+     * Function that will be called with the selected File
+     * Users can do their own upload logic and then
+     * insert via editor, e.g.:
+     *
+     *   onImageSelected(file: File, editor: Editor) { … }
+     */
+    onImageSelected: {
+      type: Function,
+      default: null,
+    },
     modelValue: {},
     editable: {
       default: true,
@@ -577,28 +587,15 @@ export default {
     triggerImagePicker() {
       this.$refs.fileInput.click()
     },
-
-    async onImageSelected(event) {
+    async handleFileInput(event) {
       const file = event.target.files?.[0]
       if (!file) return
 
-      // 1) upload to your server / cloud
-      const form = new FormData()
-      form.append('file', file)
-      const res = await axios.post('/api/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      const url = res.data.url    // { url: 'https://…' }
-
-      // 2) insert into editor
-      this.editor
-        .chain()
-        .focus()
-        .setImage({ src: url })
-        .run()
-
-      // reset so same file can be picked again
-      event.target.value = null
+      if (this.onImageSelected) {
+        // If user provided a handler, call it:
+        // give them the file and the editor instance
+        this.onImageSelected(file, this.editor)
+      }
     },
     handleTyping() {
       // 1. As soon as any key is pressed, mark “typing”
