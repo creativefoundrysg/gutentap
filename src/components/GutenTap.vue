@@ -191,6 +191,28 @@
           </button>
         </div>
       </div>
+      <!-- image uploader -->
+      <div
+        class="flex gap-1 items-center hide-empty flex-row p-1 md:p-2"
+        v-if="!dragging"
+      >
+      <button
+        @click.prevent="triggerImagePicker"
+        :disabled="!editor"
+        class="p-1 hover:bg-slate-100 rounded"
+        title="Upload image"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+      </button>
+
+      <input
+        ref="fileInput"
+        type="file"
+        accept="image/*"
+        class="hidden"
+        @change="onImageSelected"
+      />
+      </div>
 
       <div
         class="flex gap-1 items-center hide-empty flex-row p-1 md:p-2"
@@ -320,6 +342,8 @@ import Blockquote from "@tiptap/extension-blockquote";
 import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
 import Highlight from "@tiptap/extension-highlight";
+import Image from '@tiptap/extension-image'
+import axios from 'axios'
 
 import {
   DragNode,
@@ -452,6 +476,7 @@ export default {
         Subscript,
         Superscript,
         Highlight,
+        Image.configure({ inline: false, allowBase64: false }),
         Commands.configure({
           suggestion: suggestion(this.allBlockTools),
         }),
@@ -549,6 +574,32 @@ export default {
   },
 
   methods: {
+    triggerImagePicker() {
+      this.$refs.fileInput.click()
+    },
+
+    async onImageSelected(event) {
+      const file = event.target.files?.[0]
+      if (!file) return
+
+      // 1) upload to your server / cloud
+      const form = new FormData()
+      form.append('file', file)
+      const res = await axios.post('/api/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      const url = res.data.url    // { url: 'https://…' }
+
+      // 2) insert into editor
+      this.editor
+        .chain()
+        .focus()
+        .setImage({ src: url })
+        .run()
+
+      // reset so same file can be picked again
+      event.target.value = null
+    },
     handleTyping() {
       // 1. As soon as any key is pressed, mark “typing”
       this.isTyping = true;

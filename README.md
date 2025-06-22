@@ -2,6 +2,11 @@
 
 [Demo here](http://gutentap.letsdance.agency)
 
+## Make changes and preview locally:
+
+Modify `app.vue`. The editor components reside at `gutentap.vue`.
+Run `vite dev`.
+
 ## Project setup
 
 Install with `npm install gutentap`.
