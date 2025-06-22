@@ -1,7 +1,7 @@
 {
   "name": "gutentap",
-  "version": "0.1.91",
-  "private": false,
+  "version": "0.1.92",
+  "private": true,
   "type": "module",
   "files": [
     "lib",
