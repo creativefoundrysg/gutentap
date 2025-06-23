@@ -487,9 +487,9 @@ export default {
         Superscript,
         Highlight,
         Image.configure({ inline: false, allowBase64: false }),
-        Commands.configure({
-          suggestion: suggestion(this.allBlockTools),
-        }),
+        // Commands.configure({
+        //   suggestion: suggestion(this.allBlockTools),
+        // }),
         Link.configure({
           openOnClick: false,
         }),
@@ -594,7 +594,7 @@ export default {
       if (this.onImageSelected) {
         // If user provided a handler, call it:
         // give them the file and the editor instance
-        let url = this.onImageSelected(file, this.editor)
+        let url = await this.onImageSelected(file, this.editor)
 
         if (url) {
           // 2) insert into editor
