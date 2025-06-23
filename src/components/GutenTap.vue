@@ -595,7 +595,7 @@ export default {
         // If user provided a handler, call it:
         // give them the file and the editor instance
         let url = await this.onImageSelected(file, this.editor)
-
+        alert("uploaded", url)
         if (url) {
           // 2) insert into editor
           this.editor.chain().focus().setImage({ src: url }).run()
